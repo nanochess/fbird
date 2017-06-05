@@ -2,9 +2,13 @@
         ; F-bird text game in a bootsector
         ;
         ; by Oscar Toledo G.
+        ; http://nanochess.org/
         ;
         ; Creation date: Jun/04/2017. A messy unoptimized thing.
         ; Revision date: Jun/05/2017. Better usage of graphic charset.
+        ;                             Removed a non-8088 long jump. Added
+        ;                             sound. Solved bug when overwriting
+        ;                             previous score.
         ;
 
         use16
@@ -45,13 +49,12 @@ fb1:    push cx
 
 fb23:   mov ah,0x01     ; Wait for a key
         int 0x16
-        jz fb22
+        pushf
         xor ax,ax
         int 0x16
-        jmp short fb23
+        popf
+        jnz fb23
 
-fb22:   xor ax,ax
-        int 0x16
         ;
         ; Main loop
         ;
@@ -76,9 +79,8 @@ fb12:   mov al,[bird]   ; Bird falls because of gravity
 fb15:   mov al,[di]
         mov word [di],$0d1f
 fb16:   add al,[di+2]
-        shr al,1
         mov word [di+2],$0d10
-        cmp al,0x20     ; Collision with scenery?
+        cmp al,0x40     ; Collision with scenery?
         jz fb19
         ;
         ; Stars and game over
@@ -104,7 +106,6 @@ fb20:   push cx
         jmp fb21
 
 fb19:   call wait_frame ; Wait for frame
-        inc byte [frame]
         mov al,[frame]
         and al,7       ; 8 frames?
         jnz fb17
@@ -115,27 +116,28 @@ fb17:
         mov byte [di+2],$20
         call scroll_scenery     ; Scroll scenery
         call scroll_scenery     ; Scroll scenery
+        cmp byte [0x00a0],0xb0  ; Passed a column?
+        jz fb27
         cmp byte [0x00a2],0xb0  ; Passed a column?
-        jnz fb24
+fb27:   jnz fb24
         inc word [score]        ; Increase score
         mov ax,[score]
         mov di,0x008e   ; Show current score
-fb25:   mov dx,0        ; Extend AX to 32 bits
+fb25:   xor dx,dx       ; Extend AX to 32 bits
         mov bx,10       ; Divisor is 10
         div bx          ; Divide
-        add dl,0x30     ; Convert remaining 0-9 to ASCII
-        push ax
-        mov al,dl
-        mov ah,0x0c
+        add dx,0x0c30   ; Convert remaining 0-9 to ASCII, also put color
+        xchg ax,dx
         std
         stosw
+        mov byte [di],0x20      ; Clean at least one character of prev. score
         cld
-        pop ax
+        xchg ax,dx
         or ax,ax
         jnz fb25
 fb24:   mov ah,0x01     ; Any key pressed?
         int 0x16
-        jz fb12         ; No, go to main loop
+        jz fb26         ; No, go to main loop
         mov ah,0x00
         int 0x16        ; Get key
         cmp al,0x1b     ; Escape?
@@ -147,7 +149,16 @@ fb4:    mov ax,[bird]
         jb fb18
         mov [bird],ax
 fb18:   mov byte [grav],0       ; Reset gravity
-        jmp fb12
+        mov al,0xb6
+        out (0x43),al
+        mov al,0x90
+        out (0x42),al
+        mov al,0x4a
+        out (0x42),al
+        in al,(0x61)
+        or al,0x03              ; Turn on sound
+        out (0x61),al
+fb26:   jmp fb12
 
         ;
         ; Scroll scenery one column at a time
@@ -173,11 +184,12 @@ fb2:    mov cx,79
         in al,(0x40)
         and al,0x70
         jz fb5
-        mov word [0x0efe],0x0408
+        mov bx,0x0408
+        mov [0x0efe],bx
         mov di,0x0e5e
         and al,0x20
         jz fb3
-        mov word [di],0x0408
+        mov [di],bx
         sub di,0x00a0
 fb3:    mov word [di],0x091e
         ;
@@ -192,15 +204,13 @@ fb5:    dec word [next]
         and ax,0x0007
         add al,0x04
         mov [tall],ax
-fb8:    mov dl,0xdb
-        mov cx,[tall]
-        cmp bx,0x01
-        jz fb7
-        cmp bx,0x02
-        jz fb7
+fb8:    mov cx,[tall]
         or bx,bx
         mov dl,0xb0
         jz fb7
+        mov dl,0xdb
+        cmp bx,0x03
+        jb fb7
         mov dl,0xb1
 fb7:    mov di,0x013e
         mov ah,0x0a
@@ -237,16 +247,17 @@ fb6:    ret
 wait_frame:
         mov ah,0x00
         int 0x1a
-        mov bx,dx
-fb14:   push bx
+fb14:   push dx
         mov ah,0x00
         int 0x1a
         pop bx
         cmp bx,dx
         jz fb14
+        inc word [frame]
+        in al,(0x61)
+        and al,0xfc             ; Turn off sound
+        out (0x61),al
         ret
-
-        db "nanochess 2017"     ; Guess who? :P
 
         db 0x55,0xaa    ; Bootable signature
 

@@ -1,5 +1,5 @@
 F-Bird, a text bootsector game.
-by Oscar Toledo G.
+by Oscar Toledo G. Jun/05/2017
 
 http://nanochess.org
 https://github.com/nanochess
@@ -19,10 +19,13 @@ Use this command line:
 
   nasm -f bin fbird.asm -o fbird.com
 
-Only tested with VirtualBox for Mac OS X running Windows XP running this
-game, it should be runnable also with DosBox or qemu:
+Tested with VirtualBox for Mac OS X running Windows XP running this
+game, it also works with DosBox and probably with qemu:
 
   qemu-system-x86_64 -fda fbird.com
+
+Note that VirtualBox doesn't emulate the PC speaker, so the "flap"
+sound doesn't sound at all.
 
 Enjoy it!
 
