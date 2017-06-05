@@ -1,3 +1,11 @@
+	;
+	; Show the available charset
+	;
+	; by Oscar Toledo G. http://nanochess.org/
+	;
+	; Creation date: Jun/05/2017.
+	;
+
 ss1:    mov ax,0x0002
         int 0x10
         mov ax,0xb800
