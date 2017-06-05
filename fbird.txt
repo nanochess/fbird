@@ -1,0 +1,28 @@
+F-Bird, a text bootsector game.
+by Oscar Toledo G.
+
+http://nanochess.org
+https://github.com/nanochess
+
+Run it as a COM file or write it in the bootsector of a floppy disk.
+
+Press any key to start, press any key to fly!
+
+This game is written using pure 8088 instructions, so it should work
+over an original IBM PC with CGA card. No Hercules support (though it
+would be a matter of changing the video segment to B000)
+
+If you want to assemble it, you must download the Netwide Assembler
+(nasm) from www.nasm.us
+
+Use this command line:
+
+  nasm -f bin fbird.asm -o fbird.com
+
+Only tested with VirtualBox for Mac OS X running Windows XP running this
+game, it should be runnable also with DosBox or qemu:
+
+  qemu-system-x86_64 -fda fbird.com
+
+Enjoy it!
+
