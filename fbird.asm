@@ -208,7 +208,7 @@ fb5:    dec word [next] ; Decrease time (column really) for next pipe
         in al,(0x40)    ; Get "random" number
         and ax,0x0007   ; Between 0 and 7
         add al,0x04     ; Between 4 and 11
-        mov [tall],ax   ; This will tell how so tall is the pipe
+        mov [tall],ax   ; This will tell how tall the pipe is
 fb8:    mov cx,[tall]
         or bx,bx        ; Rightmost?
         mov dl,0xb0
