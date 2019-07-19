@@ -17,7 +17,7 @@
         int 0x10        ; Call BIOS
         cld             ; Reset direction flag (so stosw increments registers)
         mov ax,0xb800   ; Point to video segment
-        mov ds,ax       ; Both source (common access)
+        mov ds,ax       ; Both the source (common access)
         mov es,ax       ; and target segments
         ;
         ; Game restart
@@ -138,7 +138,7 @@ fb25:   xor dx,dx       ; Extend AX to 32 bits
         mov byte [di],0x20      ; Clean at least one character of prev. score
         cld
         xchg ax,dx
-        or ax,ax        ; Still remains score digits?
+        or ax,ax        ; Score digits still remain?
         jnz fb25        ; Yes, jump
 fb24:   mov ah,0x01     ; Any key pressed?
         int 0x16
